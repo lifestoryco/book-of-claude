@@ -1,6 +1,18 @@
 # War Stories
 
-Gotchas that cost me real time. Each one has a root cause, a fix, and a signal for how to know if you're hitting it. No fluff — these are production bugs, not hypotheticals.
+Real bugs that cost real time. Each one has the symptom, root cause, fix, and detection signal. Read before you hit them.
+
+---
+
+### Claude settings.json hooks section can silently disappear
+
+**What happened:** A `.claude/settings.json` file was edited — either manually or by a tool. The hooks section that registered all PreToolUse and PostToolUse handlers was removed with no warning. The hook scripts stayed on disk in `.claude/hooks/` but stopped running entirely.
+
+**Why:** Claude Code reads the hooks config from `settings.json` on startup. If the `hooks` key is missing, no hooks run, regardless of what scripts exist in the hooks directory. JSON editing tools can silently remove load-bearing sections.
+
+**The fix:** After any edit to `settings.json`, run `git diff .claude/settings.json` and verify the `hooks` key is still present. If it disappeared, restore it: `git checkout HEAD -- .claude/settings.json`.
+
+**How to detect:** Hook behavior that should be blocking stops working. Confirm with `cat .claude/settings.json | jq '.hooks'` — if it returns `null`, hooks are not registered.
 
 ---
 
@@ -49,18 +61,6 @@ Gotchas that cost me real time. Each one has a root cause, a fix, and a signal f
 **The fix:** Use `createPortal(overlay, document.body)` to render the overlay outside the problematic parent entirely. Add an SSR guard: `useEffect(() => setMounted(true), [])` and only render the portal after mount.
 
 **How to detect:** A fixed-position element that refuses to appear on top despite a high `z-index`, and there's a `backdrop-filter` or `filter` somewhere in its ancestor chain.
-
----
-
-### Supabase TUS signed upload uses a completely different endpoint than JWT auth
-
-**What happened:** A large file upload used a signed upload URL from `createSignedUploadUrl()`, then sent the TUS request to the standard resumable upload endpoint with an `Authorization: Bearer` header. The upload returned 403.
-
-**Why:** These are two separate endpoint/auth systems. The standard `/upload/resumable` endpoint validates via JWT claims (`sub`, `role`) and enforces Postgres RLS. The signed endpoint `/upload/resumable/sign` validates via an `x-signature` header and runs as a superuser, bypassing RLS entirely. Signed tokens have no JWT claims and only work with the `/sign` endpoint. Sending them to the JWT endpoint fails auth every time.
-
-**The fix:** When using `createSignedUploadUrl()`, send the TUS request to the `/upload/resumable/sign` endpoint with an `x-signature` header. Use the project's direct storage hostname for large file uploads.
-
-**How to detect:** 403 on TUS upload despite a freshly generated signed URL. Check which endpoint you're targeting and which auth header you're sending.
 
 ---
 
@@ -136,18 +136,6 @@ Gotchas that cost me real time. Each one has a root cause, a fix, and a signal f
 
 ---
 
-### Multi-part archive streams silently hang when connections are opened upfront
-
-**What happened:** A pipeline that processed multi-part archive files (numbered segments of a single large export) fetched all HTTP connections upfront before beginning extraction. Connections that weren't immediately read were dropped by the CDN after an idle timeout. The pipeline hung silently on the dropped connection — no error, no timeout, no progress.
-
-**Why:** CDNs and object storage systems enforce idle read timeouts. If you open an HTTP connection and don't read from it within the timeout window, the server closes it. A pipeline that queues up all connections before processing any of them will hit this on everything after the first part.
-
-**The fix:** Fetch and fully process each archive part serially before opening the next connection. Never hold multiple idle HTTP connections open. Process one part completely, then fetch the next.
-
-**How to detect:** A multi-part download pipeline that processes part 1 successfully then hangs indefinitely on part 2 with no error. Add a log line at the start of each part's fetch — if part 2's log never fires, the hang is before the read, not during it.
-
----
-
 ### BullMQ requires maxRetriesPerRequest: null on the ioredis connection
 
 **What happened:** BullMQ queues and workers used the default ioredis connection config. Under load, the Redis connection experienced brief interruptions. ioredis hit its default retry limit (20 retries) and threw `MaxRetriesPerRequestError`. This cascaded into a flood of connection errors across all queue operations.
@@ -157,18 +145,6 @@ Gotchas that cost me real time. Each one has a root cause, a fix, and a signal f
 **The fix:** Set `maxRetriesPerRequest: null` on every ioredis connection used by BullMQ (both Queue and Worker instances). Put this in a shared connection config that all workers import.
 
 **How to detect:** `MaxRetriesPerRequestError` in logs, followed by cascading queue failures. Check your ioredis connection config for a missing or non-null `maxRetriesPerRequest`.
-
----
-
-### Supabase free plan has a hardcoded 50 MB upload cap
-
-**What happened:** File uploads over 50 MB returned a 413 error from Supabase Storage. The error message was generic. Several hours were spent investigating the TUS upload implementation before discovering the real cause.
-
-**Why:** Supabase's free plan enforces a 50 MB per-file limit at the infrastructure level. This is not a configurable setting — it cannot be changed in the dashboard, via policy, or via storage config. It is a hard cap on the free tier.
-
-**The fix:** Upgrade to the Pro plan. The limit becomes configurable up to 500 GB per file on Pro.
-
-**How to detect:** 413 errors on file uploads above ~50 MB. Check the response body — if it mentions "Payload Too Large" and you're on the free plan, this is the cause before anything else.
 
 ---
 
@@ -218,26 +194,3 @@ Gotchas that cost me real time. Each one has a root cause, a fix, and a signal f
 
 **How to detect:** A fixed-position dropdown or tooltip that appears in the wrong position or is clipped. Inspect the ancestor chain for `backdrop-filter`, `filter`, `transform`, or `will-change` properties.
 
----
-
-### Video player requires a playback ID even when using signed tokens
-
-**What happened:** A video player was wired up with a signed JWT token for secure playback but no `playbackId` prop, following a strict "never send the ID to the browser" interpretation of a security rule. The player refused to initialize and threw a missing-prop error.
-
-**Why:** The video player component requires a `playbackId` to construct the playback URL, even when a signed token is also provided. The signed token alone is not a complete URL — it's an auth token that must be combined with the ID. The security concern (preventing unauthorized access) is addressed by the time-limited signed token, not by keeping the ID secret. The ID without a valid token is useless.
-
-**The fix:** Send the `playbackId` alongside the signed token. The ID is safe to expose when the playback policy is set to `signed` — the ID cannot stream video without a valid token.
-
-**How to detect:** Video player initialization errors mentioning a missing or required `playbackId` prop, after a signed-token-only implementation.
-
----
-
-### Claude settings.json hooks section can silently disappear
-
-**What happened:** A `.claude/settings.json` file was edited — either manually or by a tool. The hooks section that registered all PreToolUse and PostToolUse handlers was removed without any warning. The hook scripts remained on disk in `.claude/hooks/` but were no longer registered and stopped running entirely.
-
-**Why:** JSON editing tools (and humans) can remove sections without realizing they're load-bearing. Claude Code reads the hooks config from `settings.json` on startup — if the `hooks` key is gone, no hooks run, regardless of what scripts exist in the hooks directory.
-
-**The fix:** After any edit to `settings.json`, run `git diff .claude/settings.json` and verify the `hooks` key is still present with all its registered commands. If it disappeared, restore it from git: `git checkout HEAD -- .claude/settings.json`.
-
-**How to detect:** Hook behavior that should be blocking dangerous commands stops working. Or run `cat .claude/settings.json | jq '.hooks'` — if it returns `null`, the hooks are not registered.

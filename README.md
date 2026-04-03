@@ -1,176 +1,205 @@
 # Book of Claude
 
-A battle-tested Claude Code playbook. Commands, agents, hooks, and workflows I use every day.
+My actual Claude Code setup — the commands, hooks, rules, and workflows I use every day building production software solo. Putting it all in the open so you can use it, improve it, and build on it.
 
-> I've been building production software with Claude Code as my only engineering teammate.
-> This repo is everything I've figured out — the systems, the commands, the hard-won lessons.
-> Take what you want, ignore the rest.
+Star it if it's useful. Open a PR if you build something better.
 
 ---
 
-## Start Here
+## Give This to Claude
 
-Copy `starter-kit/` into your project. 5 files, 5 minutes. You get:
+Want Claude to implement this system in your project? Share this repo URL and say:
 
-- **Burn rate tracking** — know exactly how much usage you have left before you hit the limit
-- **Multi-agent code review** — 4 specialists review your code in parallel (security, logic, UX, architecture)
-- **Session management** — clean worktree-based start/end lifecycle so Claude always knows where it is
-- **Project constitution** — a `CLAUDE.md` template that actually constrains behavior instead of just describing it
+> "Read the README and QUICK-START in this repo and implement the full starter kit in my project."
 
-That's 80% of the value. The rest of this repo is the other 20%.
+Claude will handle the rest. See [QUICK-START.md](./QUICK-START.md) for the exact steps.
 
-```bash
-cp -r starter-kit/.claude your-project/
-cp -r starter-kit/scripts your-project/
-cp starter-kit/CLAUDE.md.template your-project/CLAUDE.md
-# Edit CLAUDE.md for your project, then: claude
+---
+
+## What's Here
+
+```
+starter-kit/          # Start here. 5 files, 5 minutes.
+  .claude/
+    commands/         # /burn-rate, /code-review, /start-session, /end-session
+    hooks/            # block-dangerous-commands.sh
+    settings.json     # Hook registration + permissions
+  scripts/
+    claude-usage.sh   # Powers /burn-rate
+    start.sh          # Powers /start-session
+  CLAUDE.md.template  # Fill this in for your project
+
+.claude/              # The full system — pick what you need
+  commands/           # 20+ slash commands
+  hooks/              # 3 hooks (dangerous commands, banned patterns, auto-typecheck)
+  rules/              # Domain rule files (frontend, security, env-config)
+  agents/             # 7 specialist subagents
+
+community/            # Commands contributed by others — add yours here
+docs/                 # Templates for advisory board, tasks, state tracking
+WAR-STORIES.md        # 16 real production bugs with root causes and fixes
 ```
 
-See [QUICK-START.md](./QUICK-START.md) for the full 5-minute walkthrough.
+---
+
+## Starter Kit (5 minutes)
+
+**Copy into your project:**
+
+```bash
+git clone https://github.com/lifestoryco/book-of-claude.git book-of-claude
+cp -r book-of-claude/starter-kit/.claude /path/to/your-project/
+cp -r book-of-claude/starter-kit/scripts /path/to/your-project/
+chmod +x /path/to/your-project/scripts/*.sh
+chmod +x /path/to/your-project/.claude/hooks/*.sh
+```
+
+**Create your CLAUDE.md:**
+
+```bash
+cp book-of-claude/starter-kit/CLAUDE.md.template /path/to/your-project/CLAUDE.md
+```
+
+Open it and fill in:
+- **Non-negotiable rules table** — write constraints, not descriptions. `"Never use getSession()"` is a constraint. `"This project uses auth"` is not.
+- Auth pattern (delete if not applicable)
+- Git commit format
+- Self-verification commands (what to run before marking work done)
+
+**Launch:**
+
+```bash
+cd /path/to/your-project && claude
+```
+
+Claude reads `CLAUDE.md` automatically on startup. Run `/burn-rate` to confirm the commands are working.
+
+**What you get:**
+
+| Command | What it does |
+|---------|-------------|
+| `/burn-rate` | Usage dashboard — session and weekly budget remaining |
+| `/code-review` | 4 specialist agents review in parallel (security, logic, UX, architecture) |
+| `/start-session` | Load state doc, confirm context, set scope |
+| `/end-session` | Commit, rebase onto main, update state doc |
+
+Plus `block-dangerous-commands.sh` — a hook that intercepts every Bash call and blocks `rm -rf`, `git push --force`, `DROP TABLE`, and `--no-verify` before they run. Not a rule Claude can choose to ignore. A hard wall.
 
 ---
 
 ## The Five Patterns
 
-These are the ideas. The files in this repo are just implementations.
+These are the ideas the whole system is built on.
 
 ### 1. Project Constitution
 
-`CLAUDE.md` is not documentation — it is a contract. The difference is enforceability. A contract tells Claude what it must never do (hard bans), what it must always do (invariants), and what patterns to follow. A good CLAUDE.md is a single file that makes Claude behave consistently across every session, every worktree, every context reload.
+`CLAUDE.md` is an enforcement contract, not documentation. It has three things:
 
-The anti-pattern is writing a CLAUDE.md that describes your project. The right pattern is writing one that constrains Claude's behavior. "Never use this deprecated library" is a constraint. "This project uses X" is just description.
+- **Hard bans** — `NEVER hard-delete records, use soft-delete only`
+- **Invariants** — `ALWAYS run tsc --noEmit before marking work complete`
+- **Patterns** — the one correct way to do auth, commits, error handling in this codebase
 
-The template in `starter-kit/CLAUDE.md.template` gives you the skeleton. The non-negotiable rules table is the most important section — fill it in aggressively.
+A vague CLAUDE.md produces inconsistent behavior across sessions. A tight one doesn't.
+
+Keep domain-specific rules in separate `rules/*.md` files (`security.md`, `frontend.md`, `business-logic.md`) that CLAUDE.md references. Keeps the constitution scannable and makes it easy to update one domain without touching the rest.
 
 ### 2. Session Protocol
 
-Claude Code runs best when each session has a defined start and end. At start: load state, confirm context, agree on scope. At end: commit, push, update docs. This sounds obvious but most people skip it, and the result is sessions that drift — Claude loses context mid-task, makes decisions without knowing what changed yesterday, and leaves half-finished work in a confused state.
+Each session has a defined start and end.
 
-The worktree model makes this clean. Each session gets its own git worktree branch. Start creates it, sets the context, and runs a pre-flight check. End rebases onto main and updates the session state doc. Claude always knows what session it's in and what came before.
+**Start:** Load `docs/state/project-state.md`, confirm what changed since last session, agree on scope.
+**End:** Commit, push, update the state doc with what was done and what comes next.
 
-`/start-session` and `/end-session` handle this. The state lives in `docs/state/handoff.md` (or whatever you name it). After a few sessions, the pattern becomes muscle memory.
+The state doc is the continuity layer. Without it, every session starts cold. `/start-session` and `/end-session` handle the lifecycle.
 
 ### 3. Work Breakdown Structure
 
-Large features need to be decomposed before Claude touches any code. A WBS is a numbered task list with explicit dependencies, acceptance criteria, and effort estimates. The point isn't project management — it's cognitive load management. A well-written WBS task tells Claude exactly what to do, what not to touch, and how to know when it's done.
+Before Claude touches code on any non-trivial feature:
+1. Decompose into a numbered task list with explicit dependencies and acceptance criteria
+2. One task = one session max, with a clear done state
+3. Use `/run-task TASK-1.3` to execute, `/next` to get a recommendation, `/wbs` to see status
 
-The `/wbs` command shows status. `/run-task T-123` executes a specific task. `/next` asks Claude to recommend what to work on based on current state. The discipline of writing WBS tasks up front pays back immediately when Claude executes them without scope creep.
+The discipline isn't project management — it's scope containment. A well-written task means Claude executes without wandering into adjacent work.
 
-### 4. Advisory Board (Alpha Squad)
+### 4. Advisory Board
 
-Some decisions need a second opinion — architecture choices, product direction, tradeoffs with no obvious answer. The Alpha Squad pattern simulates a panel of advisors (CTO, product strategist, security lead, UX lead, etc.) who debate a question and reach a recommendation. It runs as a single Claude session with multiple named personas.
+`/alpha-squad [topic]` simulates a panel of advisors (CTO, Product Lead, Head of Growth, COO, UX Lead) who debate a decision and produce a structured recommendation with minority opinions preserved.
 
-The output is a structured recommendation with minority opinions preserved. It's not magic — it's just forcing Claude to argue both sides of a decision before committing to one. But the output quality is noticeably better than asking Claude "what should I do about X?"
+Use it when there's no obviously right answer — architecture choices, tech tradeoffs, product direction. Way better output than asking "what should I do about X" because it's forced to argue both sides before recommending one.
 
-`/alpha-squad [topic]` runs the full board. `/alpha-squad huddle: [topic]` runs a faster 3-member version.
+### 5. Guard Rails
 
-### 5. Guard Rails (Hooks)
+Hooks run before and after Claude's tool calls. They're the only way to make certain behaviors truly deterministic.
 
-Hooks run before or after Claude tool calls. They are the only way to make certain behaviors deterministic. If you want Claude to never run `rm -rf` unattended, a permission rule helps — but a hook that blocks it at the shell level is a hard wall. The difference matters when the stakes are high.
+```json
+// .claude/settings.json — already configured in the starter kit
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{ "type": "command", "command": ".claude/hooks/block-dangerous-commands.sh" }]
+    }]
+  }
+}
+```
 
-The hooks in this repo are minimal and auditable. `block-dangerous-commands.sh` is the most important one — it intercepts Bash calls and checks against a blocklist. Read every hook script before using it. They run with your shell permissions, which means a malicious hook can do anything your user account can do. See [SECURITY.md](./SECURITY.md).
+Claude cannot override a hook — it's enforced at the shell level before the command runs. **Read every hook script before using it.** See [SECURITY.md](./SECURITY.md).
 
 ---
 
 ## Command Reference
 
-All commands live in `.claude/commands/`. Run them with `/command-name` in a Claude Code session.
+All commands live in `.claude/commands/`. Copy the ones you want into your project.
 
-| Command | What it does | Token Cost |
-|---------|-------------|------------|
-| `/alpha-squad` | AI advisory board simulation — structured debate on a topic | High |
-| `/art` | Creative lab / generative art session | Med |
-| `/burn-rate` | Usage dashboard — how much budget remains | Low |
-| `/start-session` | Begin a worktree session with context load | Low |
-| `/end-session` | End session, rebase onto main, push | Low |
-| `/run-task` | Execute a WBS task by ID | Med |
-| `/next` | Recommend what to work on next | Low |
+| Command | What it does | Cost |
+|---------|-------------|------|
+| `/burn-rate` | Usage dashboard — session, weekly, and model-level budget | Low |
+| `/start-session` | Load state, confirm context, set scope | Low |
+| `/end-session` | Commit, rebase onto main, update state doc | Low |
+| `/sync` | Rebase current branch onto origin/main | Low |
+| `/next` | Recommend what to work on based on current state | Low |
 | `/wbs` | Work breakdown status board | Low |
-| `/update-docs` | Post-task documentation updates | Low |
+| `/update-docs` | Post-task docs sync (flight plan + state) | Low |
+| `/run-task` | Execute a task by ID from docs/tasks/pending/ | Med |
+| `/prompt-builder` | Generate a self-contained task prompt for autonomous execution | Med |
+| `/code-review` | 4 specialist agents review in parallel | High |
+| `/security-audit` | Full security scan — auth, secrets, OWASP | High |
+| `/ux-audit` | UX and accessibility audit | High |
+| `/compliance` | GDPR / CCPA / SOC 2 readiness audit | High |
+| `/launch-check` | Pre-deploy quality gate | Med |
+| `/qa-report` | Consolidated bug report from QA findings | Med |
+| `/alpha-squad` | Advisory board — structured debate on a decision | High |
+| `/analytics` | Cross-platform analytics queries (PostHog, GA4, Clarity) | Med |
 | `/scout` | Reddit social listening dashboard | Med |
 | `/scout-draft` | Collaborative Reddit reply drafting | Med |
-| `/scout-seed` | Plant authentic discussion questions | Med |
-| `/code-review` | Multi-agent parallel code review | High |
-| `/ux-audit` | UX and accessibility audit | High |
-| `/analytics` | Multi-platform analytics queries | Med |
-| `/security-audit` | Security scan across the codebase | High |
-| `/compliance` | GDPR / CCPA / SOC 2 audit | High |
-| `/launch-check` | Launch readiness gate | Med |
-| `/sync` | Rebase worktree onto main | Low |
-| `/qa-report` | Consolidated bug report | Med |
+| `/scout-seed` | Plant discussion questions in subreddits | Med |
 | `/content` | SEO content generator | Med |
-| `/prompt-builder` | Task prompt generator | Med |
+| `/art` | Creative / generative art session | Med |
 
-**Token cost guide:** Low = under 10K tokens. Med = 10-50K. High = 50K+ (parallel agents, full-codebase scans).
+**Cost guide:** Low < 10K tokens · Med 10–50K · High 50K+ (parallel agents, full-codebase scans)
+
+---
+
+## Example: WBS in Action
+
+Not sure how the project management system works? [docs/examples/calculator-wbs.md](./docs/examples/calculator-wbs.md) walks through building a calculator app from scratch — flight plan, prompt generation, task execution, and state tracking. The full loop.
 
 ---
 
 ## War Stories
 
-See [WAR-STORIES.md](./WAR-STORIES.md).
+[WAR-STORIES.md](./WAR-STORIES.md) — 16 real production bugs. Each has the symptom, root cause, fix, and detection signal.
 
-The gotchas that cost me hours. BullMQ silently drops duplicate jobs. Framer Motion can't interpolate `'transparent'`. `merge2` swallows stream errors. `Set-Cookie` headers vanish on 307 redirects. 20 entries, each with the root cause and the fix. Read it before you hit them.
-
----
-
-## The Full System
-
-If you want everything — agents, hooks, rules, templates, and all the commands — the `.claude/` directory is the complete harness. The starter kit is the curated best-of. The rest is stuff that grew organically from months of daily use.
-
-```
-.claude/
-  commands/        # All slash commands
-  hooks/           # Shell scripts for PreToolUse / PostToolUse
-  rules/           # Domain-specific rule files (imported into CLAUDE.md)
-  worktrees/       # Per-session git worktrees (gitignored content)
-
-starter-kit/
-  .claude/
-    commands/      # burn-rate, code-review, start-session
-    hooks/         # block-dangerous-commands.sh
-    settings.json  # Minimal permissions + hook registration
-  scripts/
-    claude-usage.sh
-    start.sh
-  CLAUDE.md.template
-
-community/
-  command-template.md
-  README.md
-
-docs/
-  patterns/        # Longer writeups on each of the five patterns
-  adr/             # Architecture decision records
-```
-
-The `rules/` pattern is worth calling out: instead of one giant CLAUDE.md, domain-specific rules live in separate files (`security.md`, `frontend.md`, `business-logic.md`, etc.) that CLAUDE.md references. This keeps the constitution scannable and makes it easy to update one domain without touching others.
+BullMQ silent job drops. Framer Motion color interpolation failures. Set-Cookie headers on redirects. useRef staleness in async loops. backdrop-filter stacking contexts. Claude hooks config silently disappearing. Read it before you hit them.
 
 ---
 
-## FAQ
+## Contributing
 
-**"Why not Cursor / Windsurf?"**
+This is my actual daily system, open and actively maintained. If you've built a command that solves something real, drop it in `community/` and open a PR. The only rule: it has to be something you actually use.
 
-I use Claude Code because I want full control over context, hooks for deterministic enforcement, and terminal-native workflows. The IDE tools are great and plenty of people get more done with them. Use what works for you. This repo assumes you're already in Claude Code.
-
-**"Isn't this over-engineered?"**
-
-Start with `starter-kit/`. It's 5 files. Add pieces as you need them. The full system grew organically over months of daily use — you don't need all of it on day one, and you probably never will. The value compounds as the project gets complex.
-
-**"Can I contribute?"**
-
-Yes. See [CONTRIBUTING.md](./CONTRIBUTING.md). Drop your commands in `community/` and open a PR.
-
-**"What kind of projects is this good for?"**
-
-Anything where you're the only engineer (or close to it) and you need Claude to maintain consistent behavior across many sessions. Works for web apps, APIs, CLIs, data pipelines. The session protocol and CLAUDE.md patterns matter most for long-running projects. The commands work for anything.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the format.
 
 ---
 
-## License
-
-MIT — see [LICENSE](./LICENSE).
-
-## Credits
-
-Built by [@tealizard](https://github.com/tealizard). Feedback welcome — open an issue or PR.
+MIT · Built by [@tealizard](https://github.com/tealizard) · [handoffpack.com](https://www.handoffpack.com)
