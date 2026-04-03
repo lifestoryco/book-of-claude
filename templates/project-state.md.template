@@ -1,0 +1,85 @@
+# Project State
+
+_Last updated: YYYY-MM-DD | Session: [session-name] — [one-line description of what this session did]_
+
+---
+
+## Current Status
+
+- **Phase:** [e.g., "Phase 2 — Auth + Core CRUD"]
+- **Build:** [passing / failing — and what's broken if failing]
+- **Branch:** [current working branch, e.g., main or claude/session-name]
+- **Blockers:** [none, or describe what's blocking forward progress]
+- **Next session should start with:** [one sentence priming the next Claude instance]
+
+---
+
+## What Was Just Done (YYYY-MM-DD — Session: [session-name])
+
+### [Feature or Fix Name]
+
+**New files:**
+- `path/to/new/file.ts` — [what it does, one sentence]
+- `path/to/another/file.ts` — [what it does]
+
+**Modified:**
+- `path/to/modified/file.ts` — [what changed and why]
+
+**Commits:**
+- `abc1234` — feat: [commit message]
+- `def5678` — fix: [commit message]
+
+**Decisions made:**
+- [Decision] — [Rationale. Include alternatives considered if the choice was non-obvious.]
+- [Decision] — [Rationale]
+
+**Known issues / deferred work:**
+- [Anything that was noticed but intentionally left for later]
+
+---
+
+## What's Next
+
+1. [Highest priority — be specific enough that the next session can start without clarification]
+2. [Second priority]
+3. [Third priority]
+4. [Backlog item — lower priority, do after the above]
+
+---
+
+## Open Questions
+
+[Questions that need a human decision before Claude can proceed. Leave blank if none.]
+
+- [ ] [Question requiring product/business decision]
+- [ ] [Question requiring external input]
+
+---
+
+## Environment Notes
+
+[Anything session-specific about the environment that the next instance needs to know.]
+
+- [e.g., "Migration 0042 applied to prod — types need regeneration"]
+- [e.g., "New env var FEATURE_FLAG_X added — needs to be in .env.local"]
+
+---
+
+## Previous Sessions
+
+<!-- Move the most recent "What Was Just Done" block here when starting a new session. Keep the 4 most recent. Delete older ones. -->
+
+### YYYY-MM-DD — Session: [older-session-name]
+
+[Condensed summary — 3-5 bullet points. What was built, what was decided, what's still pending from that session.]
+
+- Built: [feature]
+- Fixed: [bug]
+- Decided: [decision]
+- Deferred: [item]
+
+---
+
+### YYYY-MM-DD — Session: [even-older-session-name]
+
+- [Summary bullets]

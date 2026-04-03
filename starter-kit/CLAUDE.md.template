@@ -1,0 +1,116 @@
+# [Your Project Name] — Project Constitution
+
+**Updated:** [Date] | **Status:** [Current phase / milestone]
+
+> **Session Start:** Always read `docs/state/handoff.md` first (or delete this line if you're not using session state docs).
+> **Context Budget:** Load only CLAUDE.md at startup. Load other docs on demand.
+
+---
+
+## What This Project Is
+
+[One paragraph. What does this software do? Who uses it? What's the current state?]
+
+---
+
+## Non-Negotiable Rules
+
+These are hard constraints. Claude must follow them in every session, no exceptions.
+
+| # | Rule |
+|---|------|
+| 1 | [Example: Never hard-delete records — always use soft delete (deleted_at timestamp)] |
+| 2 | [Example: All mutations must be logged to the audit table via logAuditEvent()] |
+| 3 | [Example: Never expose API keys in client-side code or logs] |
+| 4 | [Add your rules here] |
+
+> **How to use this section:** Be specific and concrete. "Never do X" is a constraint. "Be careful with X" is not.
+> Delete the example rows and fill in the rules that matter for your project.
+
+---
+
+## Auth Pattern
+
+[Describe the single correct way to handle authentication in this codebase. Claude will follow this pattern and refuse deviations.]
+
+```typescript
+// CORRECT — paste the exact auth pattern your project uses
+// Example (replace with your actual pattern):
+const session = await getServerSession(authOptions);
+if (!session?.user) redirect('/login');
+```
+
+**Banned approaches:**
+- [List deprecated or dangerous auth methods to never use]
+
+---
+
+## Architecture Constraints
+
+[List any hard architectural decisions Claude must not deviate from. Examples:]
+- [Database: PostgreSQL only — no SQLite, no in-memory stores]
+- [State management: React Query for server state, Zustand for client state — no Redux]
+- [Styling: Tailwind only — no CSS-in-JS, no styled-components]
+
+Delete this section if you don't have strong architectural constraints yet.
+
+---
+
+## Self-Verification
+
+After writing or modifying code, ALWAYS run these commands before concluding:
+
+```bash
+# Replace with your project's actual verification commands
+npx tsc --noEmit
+npm run lint
+# npm run build  (if applicable)
+```
+
+Fix all errors before marking work complete. Never leave the codebase in a broken state.
+
+---
+
+## Git Commit Format
+
+```bash
+git commit -m "type: your message
+
+Authored by: [your name] @ [project name]"
+```
+
+Prefixes: `feat:` | `fix:` | `refactor:` | `docs:` | `test:` | `chore:`
+
+---
+
+## Directory Structure
+
+[Optional: describe your project's key directories so Claude knows where things live]
+
+```
+src/
+  app/          # Next.js app router pages
+  components/   # Reusable UI components
+  lib/          # Utilities, helpers, API clients
+  types/        # TypeScript type definitions
+```
+
+---
+
+## External Services
+
+[List the external services this project uses and any key rules about them]
+
+| Service | Purpose | Rule |
+|---------|---------|------|
+| [e.g., Stripe] | [Payments] | [Never log full card details] |
+| [e.g., S3] | [File storage] | [Signed URLs only — never public bucket ACLs] |
+
+Delete this section if not applicable.
+
+---
+
+## Contacts
+
+[Optional: who to reach out to for questions about this project]
+[Your name] — [email or GitHub]

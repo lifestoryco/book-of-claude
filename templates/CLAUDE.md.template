@@ -1,0 +1,151 @@
+# [Project Name] — Project Constitution
+
+**Updated:** [Date] | **Status:** [Phase description, e.g., "Week 3/8 — Beta Sprint"]
+
+> **Session Start:** Always read `docs/state/project-state.md` first.
+> **Context Budget:** Load only CLAUDE.md + project-state.md. Load reference docs on demand.
+
+---
+
+## Project Overview
+
+[2-4 sentences: what this project is, who it serves, and what problem it solves. Keep it tight — this primes Claude's frame of reference for every session.]
+
+**Primary actors:**
+| Actor | Auth method | Core permission |
+|-------|-------------|----------------|
+| [Role 1] | [e.g., Google OAuth] | [What they can do] |
+| [Role 2] | [e.g., Magic Link] | [What they can do] |
+
+---
+
+## Non-Negotiable Rules
+
+[These are the invariants. Claude must follow them in every session without exception. Write these as hard constraints, not preferences.]
+
+| # | Rule |
+|---|------|
+| 1 | [Your most critical rule — phrase it as a prohibition or a mandate] |
+| 2 | [Second rule] |
+| 3 | [Third rule] |
+| 4 | [Fourth rule] |
+| 5 | [Fifth rule] |
+
+<!--
+Examples of good rules:
+- "Every database mutation must log to the audit table via insertAuditEntry()"
+- "Never hard-delete records — always soft-delete with deleted_at timestamp"
+- "All API routes must verify authentication before any data access"
+- "Draft content must never be visible to public/read-only users"
+- "Never expose raw secrets or tokens to the browser bundle"
+- "edit operations must store diffs: { before: {...}, after: {...} }"
+
+Examples of weak rules (avoid these):
+- "Use good coding practices" — not actionable
+- "This project uses React" — description, not constraint
+- "Try to keep files small" — too vague
+-->
+
+---
+
+## Auth Pattern
+
+[Document your exact authentication pattern so Claude never deviates. If you use a non-standard approach, explain why and show the correct code.]
+
+```typescript
+// CORRECT — always use this pattern in server components and API routes
+// [Adjust this to match your actual auth system]
+
+const cookieStore = await cookies();
+const userId = cookieStore.get('user_id')?.value;
+if (!userId) redirect('/login');
+
+const { data: user } = await db
+  .from('users')
+  .select('role, workspace_id')
+  .eq('id', userId)
+  .single();
+```
+
+**BANNED auth patterns:**
+- `[banned-import or function]` — [reason why it's banned]
+- `[another banned pattern]` — [reason]
+
+---
+
+## Banned Patterns
+
+[List imports, functions, APIs, or patterns that must never be used. Include the reason — it helps Claude understand the boundary, not just memorize it.]
+
+| Pattern | Reason |
+|---------|--------|
+| `[package or function name]` | [Why it's banned — e.g., "deprecated, causes security issues, replaced by X"] |
+| `[another banned item]` | [Reason] |
+
+---
+
+## Key Architecture
+
+[Document the decisions Claude needs to hold in memory. Focus on non-obvious choices and things that have caused bugs or confusion in the past.]
+
+- **Database:** [e.g., Supabase/Postgres — note any critical schema conventions]
+- **Frontend:** [e.g., Next.js 14 App Router — note any important patterns]
+- **Auth:** [Brief summary — full pattern is in Auth Pattern section above]
+- **Background jobs:** [e.g., BullMQ — note any critical conventions]
+- **File storage:** [e.g., Supabase Storage — note any upload conventions]
+- **Deployment:** [e.g., Vercel — note any environment-specific gotchas]
+
+**Critical schema notes:**
+- [Table or column convention that has caused bugs before]
+- [Another important schema note]
+
+**Soft-delete convention:** `[column_name]` = soft-delete. Never hard-delete `[critical_table]`.
+
+---
+
+## Domain Rules
+
+[Link to or inline your domain-specific rule files. Keep each domain in its own file for maintainability.]
+
+See `.claude/rules/` for domain-specific rules:
+- `security.md` — API keys, auth, RLS
+- `frontend.md` — UI patterns, design system constraints
+- `business-logic.md` — [Your domain's core rules]
+
+---
+
+## Self-Verification
+
+After writing code, ALWAYS run these commands and fix any errors before marking work complete:
+
+```bash
+# Type check (required)
+npx tsc --noEmit
+
+# Build check (required — skip in worktrees if env vars unavailable)
+npm run build
+
+# [Any project-specific checks]
+# e.g.: npm run lint
+# e.g.: npm test
+```
+
+**Worktree note:** If build fails due to missing environment variables, `npx tsc --noEmit` is the minimum gate.
+
+---
+
+## Git Commit Format
+
+```bash
+git commit -m "feat: your message
+
+[Optional body]"
+```
+
+Prefixes: `feat:` · `fix:` · `refactor:` · `docs:` · `test:` · `chore:`
+
+**Never commit:**
+- Secrets or API keys
+- `node_modules/`
+- Build artifacts
+- Worktree `.env.local` files

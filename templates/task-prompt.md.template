@@ -1,0 +1,136 @@
+---
+task: TASK-X.Y
+title: [Task Title]
+phase: [Phase Name]
+size: S/M/L/XL
+depends_on: [TASK-X.Z, TASK-X.W]
+created: YYYY-MM-DD
+---
+
+# TASK-X.Y: [Task Title]
+
+## Context
+
+[2-4 sentences. Why does this task exist? What's the current state of the codebase that makes this necessary? What does this task unblock? This is the frame that helps Claude understand *why* before it understands *what*.]
+
+**Current state:** [What exists right now that this builds on or replaces]
+**Why now:** [What this task unblocks or enables]
+**Constraints:** [Any hard constraints — don't modify X, must stay compatible with Y]
+
+---
+
+## Goal
+
+[One sentence. What does "done" look like? Write it as an observable outcome, not a list of steps.]
+
+---
+
+## Steps
+
+### Step 1 — [Descriptive Name]
+
+[Detailed instructions for this step. Be specific: which files to create or modify, what functions to write, what the expected behavior is. Claude should be able to execute this without additional clarification.]
+
+**Files to create/modify:**
+- `path/to/file.ts` — [what to do here]
+
+**Expected behavior after this step:**
+- [Observable outcome 1]
+- [Observable outcome 2]
+
+---
+
+### Step 2 — [Descriptive Name]
+
+[Detailed instructions.]
+
+**Files to create/modify:**
+- `path/to/file.ts` — [what to do here]
+
+---
+
+**HUMAN GATE:** Stop after Step 2. Confirm the following before proceeding:
+- [ ] [Specific thing to verify — e.g., "the migration applied cleanly"]
+- [ ] [Specific thing to verify — e.g., "the UI renders without console errors"]
+- [ ] [Any decision that requires human judgment before continuing]
+
+Tell me "proceed" or describe any issues before continuing to Step 3.
+
+---
+
+### Step 3 — [Descriptive Name]
+
+[Detailed instructions for the next part.]
+
+**Files to create/modify:**
+- `path/to/file.ts` — [what to do here]
+
+---
+
+### Step 4 — [Descriptive Name] (if needed)
+
+[Continue as needed. For large tasks, consider adding a second HUMAN GATE at a natural checkpoint.]
+
+---
+
+## Verification
+
+Run these checks after all steps are complete:
+
+```bash
+# Type safety
+npx tsc --noEmit
+
+# Build
+npm run build
+
+# [Any feature-specific verification]
+# e.g.: curl -X POST http://localhost:3000/api/[endpoint] -d '{"test": true}'
+```
+
+Expected: [What passing looks like — no errors, specific output, specific behavior]
+
+**Manual verification checklist:**
+- [ ] [Feature-specific check — e.g., "user can create a new item"]
+- [ ] [Feature-specific check — e.g., "error state shows correctly"]
+- [ ] [Feature-specific check — e.g., "works on mobile viewport"]
+- [ ] No console errors in browser
+- [ ] No TypeScript errors
+
+---
+
+## Definition of Done
+
+- [ ] All steps completed
+- [ ] `npx tsc --noEmit` passes
+- [ ] `npm run build` passes (or worktree tsc gate if env vars unavailable)
+- [ ] Manual verification checklist complete
+- [ ] No regressions in adjacent features
+- [ ] [Any task-specific completion criteria]
+
+---
+
+## Rollback
+
+If something goes wrong and you need to revert:
+
+```bash
+# Option 1: Revert specific files
+git checkout HEAD -- path/to/file.ts
+
+# Option 2: Revert entire task (if not yet committed)
+git stash
+
+# Option 3: If migration was applied, revert it
+# [specific rollback command for your database]
+```
+
+**Known risks:**
+- [Risk 1 and how to handle it]
+- [Risk 2 and how to handle it]
+
+---
+
+## Notes for Next Session
+
+[If this task spans multiple sessions, leave notes here about where to resume, any partial work, and what decisions were made mid-task. Update this as you go.]
