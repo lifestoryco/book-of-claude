@@ -164,44 +164,43 @@ Run `/burn-rate` to confirm the commands are working.
 
 ---
 
-## 💡 TIPS (10)
+## 💡 TIPS (12)
 
-&nbsp;· [CLAUDE.md](#claudemd-3) · [Hooks](#hooks-2) · [Sessions](#sessions-2) · [WBS](#wbs-2) · [Agents](#agents-1) ·
+Things that aren't obvious until they burn you.
 
-#### CLAUDE.md (3)
+&nbsp;· [CLAUDE.md](#claudemd-4) · [Hooks](#hooks-3) · [Sessions](#sessions-2) · [Agents](#agents-3) ·
 
-| Tip | Why |
-|-----|-----|
-| Keep CLAUDE.md under 200 lines | Longer files reduce adherence. Move domain rules to `.claude/rules/*.md` and reference them. |
-| Write constraints, not descriptions | `"Never hard-delete records"` enforces behavior. `"This project uses soft delete"` doesn't. |
-| Use `NEVER` and `ALWAYS` | Soft language gets soft compliance. Hard language in CLAUDE.md gets hard compliance. |
+#### CLAUDE.md (4)
 
-#### Hooks (2)
+| Tip | What most people get wrong |
+|-----|---------------------------|
+| Your CLAUDE.md is a constitution, not a readme | If it reads like documentation, it won't change behavior. Every line should be a constraint Claude can violate. Rewrite anything that starts with "This project uses..." |
+| Vague rules get vague compliance | `"Be careful with auth"` means nothing. `"NEVER call getSession() — use supabaseAdmin + manual cookie check"` means something. The more specific the ban, the harder it is to ignore. |
+| Domain rules belong in `.claude/rules/`, not CLAUDE.md | CLAUDE.md should be scannable in 30 seconds. Move auth rules to `rules/security.md`, frontend rules to `rules/frontend.md`, reference them from CLAUDE.md. Claude reads them all. |
+| Stale CLAUDE.md is worse than no CLAUDE.md | Outdated rules confidently point Claude in the wrong direction. Audit it every few weeks. Delete anything that no longer reflects how the codebase actually works. |
 
-| Tip | Why |
-|-----|-----|
-| Hooks are not rules | A rule can be ignored. A hook enforced at shell level cannot. Put hard bans in hooks. |
-| Read every hook before using it | Hooks run before every matching tool call. Know what they block before they block something you need. |
+#### Hooks (3)
+
+| Tip | What most people get wrong |
+|-----|---------------------------|
+| `settings.json` silently resets after IDE restarts | The most common Claude setup bug. If your hooks stop working, check if settings.json got overwritten. Commit it to version control — that's the only reliable fix. |
+| Hooks run before the command, not after | A PreToolUse hook on Bash runs before every shell command Claude attempts. If it exits non-zero, the command is blocked — Claude sees the hook output, not the command output. |
+| One hook can protect the whole repo | `block-dangerous-commands.sh` intercepts every Bash call and checks for `rm -rf`, `--no-verify`, `DROP TABLE`, force push. One file, total coverage. Claude literally cannot run those commands. |
 
 #### Sessions (2)
 
-| Tip | Why |
-|-----|-----|
-| Update `project-state.md` every session | Without it every session starts cold. It's the only continuity layer between sessions. |
-| Run `tsc --noEmit` before marking work done | TypeScript errors at commit time are expensive. Catch them at task time instead. |
+| Tip | What most people get wrong |
+|-----|---------------------------|
+| Starting without a state doc is the #1 productivity killer | Claude has zero memory between sessions. Without `project-state.md`, it re-explores the codebase, makes assumptions, and often re-does work. 5 minutes updating it at session end saves 30 minutes at the next start. |
+| `/end-session` is not optional | Committing, rebasing, and updating the state doc isn't cleanup — it's the handoff to your next session. Skip it once and you'll spend the next session reconstructing context. |
 
-#### WBS (2)
+#### Agents (3)
 
-| Tip | Why |
-|-----|-----|
-| Use `/prompt-builder` before `/run-task` | A well-written prompt = Claude executes without wandering into adjacent work. |
-| One task = one session max | Scope creep is the #1 reason sessions fail. A clear done state = clean execution. |
-
-#### Agents (1)
-
-| Tip | Why |
-|-----|-----|
-| Use `/alpha-squad` before architecture decisions | Forced dissent surfaces problems you didn't think of. Use it before committing to a direction, not after. |
+| Tip | What most people get wrong |
+|-----|---------------------------|
+| `/alpha-squad` works best on decisions you've already made | Use it right before you commit to a direction, not after you're already building. The CTO and UX Lead arguing at design time is useful. Arguing after 3 days of implementation is just annoying. |
+| Parallel agents don't share context | Each subagent in `/code-review` has its own context window. They can't read each other's findings. Design your commands so each agent has everything it needs independently — don't assume Agent B will see what Agent A found. |
+| Give agents a specific failure mode to look for | `"Review this for security issues"` is weak. `"Look specifically for: exposed service role keys, missing RLS policies, and places where getSession() was used instead of getUser()"` gets real findings. |
 
 ---
 
