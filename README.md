@@ -6,7 +6,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-black?style=flat)](./LICENSE)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-black?style=flat)](./CONTRIBUTING.md)
 
-&nbsp;· [Concepts](#-concepts) · [Quick Start](#-quick-start) · [Five Patterns](#️-five-patterns) · [Commands](#-commands-22) · [Tips](#-tips-10) · [War Stories](#️-war-stories-16) · [Contributing](#-contributing) ·
+&nbsp;· [Concepts](#-concepts) · [Quick Start](#-quick-start) · [Five Patterns](#️-five-patterns) · [Commands](#-commands-22) · [Tips](#-tips-10) · [Contributing](#-contributing) ·
 
 ---
 
@@ -32,7 +32,6 @@
 | `/code-review` | 4 specialist agents review in parallel — security, logic, UX, architecture. High signal, fast. |
 | `block-dangerous-commands.sh` | Intercepts every Bash call. Blocks `rm -rf`, `git push --force`, `DROP TABLE`, `--no-verify` before they run. Not a rule — a wall. |
 | `calculator-wbs.md` | Full WBS walkthrough from blank project to built feature: `/wbs` → `/prompt-builder` → `/run-task` → `/update-docs` → `/next` |
-| `WAR-STORIES.md` | 16 real production bugs. BullMQ silent drops. useRef staleness in async loops. backdrop-filter stacking contexts. Claude hooks silently disappearing. |
 
 ---
 
@@ -61,7 +60,6 @@ docs/
   state/               # project-state.md template
 
 community/             # Commands from others — add yours here
-WAR-STORIES.md         # 16 real bugs with symptoms, causes, and fixes
 ```
 
 ---
@@ -204,23 +202,6 @@ Run `/burn-rate` to confirm the commands are working.
 | Tip | Why |
 |-----|-----|
 | Use `/alpha-squad` before architecture decisions | Forced dissent surfaces problems you didn't think of. Use it before committing to a direction, not after. |
-
----
-
-## ☠️ WAR STORIES (16)
-
-Real bugs that cost real time. Each entry has the symptom, root cause, fix, and detection signal.
-
-| Category | Entries |
-|----------|---------|
-| **Claude Config** | Hooks silently disappear after IDE restart |
-| **Async / State** | `useRef` staleness in async loops · BullMQ silent job drops · Set-Cookie headers on redirects |
-| **CSS / Layout** | `backdrop-filter` stacking contexts · Framer Motion color interpolation · `bg-dark` not theme-adaptive |
-| **Data / Files** | Multi-part archive stream detection · Large file upload cap surprises |
-| **Video / Media** | Mux signed URL pitfalls · Webhook asset readiness delays |
-| **Build / Config** | CSP headers breaking React hydration · `allowedDevOrigins` not in Next.js 14 |
-
-→ **[Read all 16 in WAR-STORIES.md](./WAR-STORIES.md)**
 
 ---
 
