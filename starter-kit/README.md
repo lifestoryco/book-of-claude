@@ -13,16 +13,18 @@ starter-kit/
       burn-rate.md       # Usage dashboard
       code-review.md     # 4-agent parallel code review
       start-session.md   # Session start with context load
+      end-session.md     # Session end with commit + push
     hooks/
       block-dangerous-commands.sh
     settings.json        # Permissions + hook registration
   scripts/
     claude-usage.sh      # Usage tracking script
     start.sh             # Session start script
+    end.sh               # Session end script
   CLAUDE.md.template     # Project constitution scaffold
 ```
 
-Five files that give you the highest-leverage pieces of the full system.
+These files give you the highest-leverage pieces of the full system.
 
 ---
 
@@ -53,9 +55,9 @@ Runs `scripts/claude-usage.sh` and prints a usage dashboard. Token budget remain
 
 Launches 4 parallel sub-agents — security analyst, logic reviewer, UX auditor, architecture reviewer — each examining the codebase from their perspective. Results are consolidated into a single prioritized report. High token cost; use when it counts.
 
-**Session management (`/start-session`)**
+**Session management (`/start-session` + `/end-session`)**
 
-Runs `scripts/start.sh`, prints current session info (branch, last commit, any staged changes), and waits for your go-ahead before doing anything. Forces a clean, deliberate start to every session.
+`/start-session` runs `scripts/start.sh`, prints current session info (branch, last commit, any staged changes), and waits for your go-ahead. `/end-session` runs `scripts/end.sh`, commits your work, rebases onto main, and pushes. Clean start-to-finish session hygiene.
 
 **Hook protection (`block-dangerous-commands.sh`)**
 

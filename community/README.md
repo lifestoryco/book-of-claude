@@ -35,4 +35,9 @@ Any Claude Code slash command that:
 
 ## Browse community commands
 
-[Commands added by contributors will appear here as the list grows.]
+| Command | What it does | Author |
+|---------|-------------|--------|
+| [deploy-check](./deploy-check.md) | Pre-deployment verification gate (build, types, secrets, bundle size) | Community |
+| [dependency-audit](./dependency-audit.md) | Scan for vulnerabilities, outdated packages, unused deps | Community |
+
+Use `command-template.md` to add your own.

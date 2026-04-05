@@ -1,0 +1,29 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Session artifacts
+.session-base-commit
+
+# Worktree contents (worktrees themselves are git objects, but their working files are local)
+.claude/worktrees/*/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+build/
+.turbo/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
