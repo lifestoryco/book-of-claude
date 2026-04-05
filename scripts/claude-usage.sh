@@ -30,7 +30,11 @@ now=$(date +%s)
 parse_epoch() {
   local ts="$1"
   ts="${ts%%.*}"; ts="${ts%%+*}"
-  date -j -u -f "%Y-%m-%dT%H:%M:%S" "$ts" +%s 2>/dev/null || echo "$now"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    date -j -u -f "%Y-%m-%dT%H:%M:%S" "$ts" +%s 2>/dev/null || echo "$now"
+  else
+    date -u -d "${ts/T/ }" +%s 2>/dev/null || echo "$now"
+  fi
 }
 
 fmt_duration() {
@@ -43,7 +47,11 @@ fmt_duration() {
 }
 
 fmt_clock() {
-  date -j -f "%s" "$1" "+%a %-I:%M %p" 2>/dev/null || echo "?"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    date -j -f "%s" "$1" "+%a %-I:%M %p" 2>/dev/null || echo "?"
+  else
+    date -d "@$1" "+%a %-I:%M %p" 2>/dev/null || echo "?"
+  fi
 }
 
 bar() {

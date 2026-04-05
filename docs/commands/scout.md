@@ -10,10 +10,8 @@ A social listening system for Reddit that surfaces relevant discussions in your 
 
 Fetches recent posts from configured subreddits, scores them for relevance and engagement, and displays a dashboard of the highest-signal discussions. A companion command (`/scout-draft`) helps you draft responses.
 
-The full system:
-- `/scout` — display the current feed dashboard
-- `/scout-draft` — collaborative reply drafting for a specific post
-- `/scout-seed` — create authentic discussion questions to plant
+The core command:
+- `/scout` — display the current feed dashboard and take action on posts
 
 ---
 

@@ -17,7 +17,6 @@ cp book-of-claude/.claude/commands/*.md your-project/.claude/commands/
 | Command | What it does | Token Cost |
 |---------|-------------|------------|
 | `/alpha-squad` | AI advisory board debates your decisions | High |
-| `/art` | Creative lab for generative art projects | Med |
 | `/burn-rate` | Claude Code usage dashboard | Low |
 | `/start-session` | Begin a worktree-isolated session | Low |
 | `/end-session` | End session, rebase, push | Low |

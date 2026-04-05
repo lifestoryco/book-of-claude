@@ -53,9 +53,8 @@ For each post:
 
 ```
 What would you like to do?
-• "draft 1" or "draft CODENAME"  → Draft a response
-• "open 2"     → Print URL
-• "skip 3"     → Mark rejected
+• "open 1"     → Print URL
+• "skip 2"     → Mark rejected
 • "refresh"    → Scan again
 ```
 

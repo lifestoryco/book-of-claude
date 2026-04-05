@@ -12,7 +12,7 @@ cd "$CLAUDE_PROJECT_DIR" 2>/dev/null || exit 0
 
 # TypeScript
 if [[ "$FILE_PATH" =~ \.(ts|tsx)$ ]] && [ -f "tsconfig.json" ]; then
-  TSC_OUTPUT=$(npx tsc --noEmit --pretty false 2>&1 | head -30)
+  TSC_OUTPUT=$(npx tsc --noEmit 2>&1 | head -30)
   if [ $? -ne 0 ]; then
     echo "TypeScript errors after editing $FILE_PATH:" >&2
     echo "$TSC_OUTPUT" >&2
