@@ -78,7 +78,17 @@ This runs `scripts/start.sh`, prints session info, and waits for your go-ahead b
 
 ---
 
-## Step 6 — Read WAR-STORIES.md
+## Step 6 — End your session cleanly
+
+When you're done working:
+```
+/end-session
+```
+This commits your work, updates your project state doc (if you have one), rebases onto main, and pushes. Clean session hygiene means the next session starts with accurate context.
+
+---
+
+## Step 7 — Read WAR-STORIES.md
 
 Before you hit your first production bug that's already documented here:
 
@@ -90,13 +100,14 @@ Or just read it in your editor. 20 real bugs, each with the root cause and fix. 
 
 ---
 
-## Step 7 — Explore the full `.claude/` for more
+## Step 8 — Explore the full `.claude/` for more
 
 The starter kit is the curated 80%. When you're ready for more:
 
 - `.claude/commands/` — all slash commands
 - `.claude/hooks/` — all hook scripts
-- `.claude/rules/` — domain-specific rule files (frontend, security, business-logic, etc.)
+- `.claude/rules/` — domain-specific rule files (frontend, security, env-config)
+- `.claude/agents/` — specialized subagent definitions
 
 Add what you need. Skip what you don't.
 
@@ -106,9 +117,10 @@ Add what you need. Skip what you don't.
 
 Once the starter kit is running smoothly, the highest-value additions in order:
 
-1. **Session protocol** — add `docs/state/handoff.md` and wire up `/start-session` and `/end-session` properly
-2. **WBS discipline** — start decomposing features into numbered tasks before Claude touches code
+1. **Session protocol** — add `docs/state/project-state.md` and use `/start-session` + `/end-session` every session
+2. **WBS discipline** — start decomposing features into numbered tasks before Claude touches code. See the [WBS Beginner Guide](docs/guides/ksqueeze-wbs-guide.md).
 3. **Alpha Squad** — add `/alpha-squad` for architecture decisions and tradeoff analysis
 4. **Domain rules** — move domain-specific constraints out of CLAUDE.md into separate `rules/*.md` files
+5. **Decision guide** — read [When to Use What](docs/guides/when-to-use-what.md) to understand hooks vs commands vs agents vs rules
 
 See [README.md](./README.md) for the full pattern documentation.
