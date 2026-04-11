@@ -4,214 +4,143 @@ description: Multi-agent parallel code review. Four specialist subagents (Securi
 
 # /code-review
 
-Runs a 4-agent parallel code review. Specialists examine code simultaneously; more thorough than single-agent review.
+Run a multi-agent code review on the current changes.
 
 ---
 
-## PHASE 1: SCOPE DISCOVERY
+## Phase 1 — Context Gathering
 
-**Target:** `$ARGUMENTS`
-
-1. **Determine scope.** If `$ARGUMENTS` is empty or `--fix`, review ALL uncommitted changes:
-   ```bash
-   git diff --stat && git diff --cached --stat && git status -s
-   ```
-   If `$ARGUMENTS` contains file paths, scope to those files only.
-
-2. **Capture the full diff.** Run `git diff` and `git diff --cached`. For specific files, read them in full.
-
-3. **Load project rules.** Read `CLAUDE.md` and all files in `.claude/rules/`. These rules are LAW — violations are automatically CRITICAL.
+1. Read CLAUDE.md for project rules and non-negotiables
+2. Run `git diff` (or `git diff HEAD~N` if reviewing multiple commits) to identify changed files
+3. Read each changed file in full to understand context
+4. Identify the scope: new feature, bug fix, refactor, etc.
 
 Print scope summary:
 ```
-================================================================
-  REVIEW SCOPE
-  Files:    [N] changed
-  Domains:  [frontend | backend | DB | auth | ...]
-  Mode:     [report-only | report + auto-fix]
-================================================================
+═══════════════════════════════════════════════
+  Review Scope: [N] files | [feature/fix/refactor]
+  Mode: [report-only | report + auto-fix]
+═══════════════════════════════════════════════
 ```
 
 ---
 
-## PHASE 2: PARALLEL REVIEW — 4 AGENTS SIMULTANEOUSLY
+## Phase 2 — Launch Specialist Reviews
 
-Launch all four subagents in parallel via the Agent tool.
+Launch 4 agents in parallel using the Agent tool:
 
-### Agent 1 — Security Reviewer
+### Security Reviewer (agent: security-reviewer)
+- Auth bypasses, injection vulnerabilities, exposed secrets
+- API routes missing authentication checks
+- OWASP top 10 issues, hardcoded credentials or tokens
+- Timing-unsafe comparisons, missing webhook signature verification
+- Violations of CLAUDE.md security rules → always CRITICAL
 
-```
-subagent_type: security-reviewer
-prompt: |
-  Paranoid security audit. Assume every input is malicious.
+### Architecture Reviewer (agent: code-reviewer)
+- N+1 queries, missing database indexes, memory leaks
+- DRY violations, unused imports, dead code
+- Stale closures in async callbacks
+- Pattern consistency with existing codebase
+- Type safety violations per CLAUDE.md
 
-  PROJECT RULES: Read CLAUDE.md and .claude/rules/security.md — any violation is CRITICAL.
+### Frontend/UX Reviewer (agent: frontend-engineer)
+- Accessibility: ARIA labels, keyboard navigation, WCAG AA contrast
+- Responsive: mobile/tablet/desktop breakpoints
+- Component patterns: composition, missing loading/error states
+- Design system compliance (colors, spacing, touch targets) per CLAUDE.md
+- Only review frontend files — if none changed, skip this agent
 
-  DIFF / FILES: [paste full diff]
-
-  SCAN FOR: auth bypasses, injection vulnerabilities, exposed secrets,
-  missing authentication on routes, OWASP top 10 issues, RLS policy gaps,
-  race conditions, CSRF/SSRF, insecure data flows, hardcoded credentials,
-  timing-unsafe comparisons, unverified webhook signatures.
-
-  OUTPUT (strict JSON):
-  { "findings": [{ "severity": "CRITICAL|HIGH|MEDIUM|LOW", "file": "...",
-    "line": 0, "title": "...", "why": "...", "fix": "...",
-    "preExisting": false, "effort": "LOW|MED|HIGH" }],
-    "positives": [] }
-```
-
-### Agent 2 — Logic Reviewer
-
-```
-subagent_type: code-reviewer
-prompt: |
-  Domain expert reviewing for correctness and business logic integrity.
-
-  PROJECT RULES: Read CLAUDE.md and all .claude/rules/ files — violations are CRITICAL.
-
-  DIFF / FILES: [paste full diff]
-
-  SCAN FOR: business logic errors, missing error handling, incomplete
-  implementations, off-by-one errors, null/undefined edge cases,
-  data integrity issues, actor permission violations, regression risk,
-  incorrect state transitions, missing audit logging for mutations.
-
-  OUTPUT: same strict JSON format as Security Reviewer.
-```
-
-### Agent 3 — Architecture Reviewer
-
-```
-subagent_type: code-reviewer
-prompt: |
-  Senior performance engineer and software architect.
-
-  PROJECT RULES: Read CLAUDE.md — any type safety or pattern violations are HIGH.
-
-  DIFF / FILES: [paste full diff]
-
-  SCAN FOR: memory leaks, N+1 queries, missing indexes, DRY violations,
-  naming convention violations, unused imports, dead code, unnecessary
-  re-renders, bundle size impact, stale closures in async callbacks,
-  module-level singletons reading env at import time, deduplication
-  pitfalls (silent drops on repeated job IDs, etc.), pattern deviations
-  from existing code in the same directory.
-
-  OUTPUT: same strict JSON format as Security Reviewer.
-```
-
-### Agent 4 — UX Reviewer
-
-```
-subagent_type: frontend-engineer
-prompt: |
-  Senior frontend engineer and accessibility expert.
-  Only review frontend files (.tsx, .css, components/, app/, pages/).
-  If no frontend files changed, return: { "findings": [], "positives": ["No frontend files in changeset."] }
-
-  PROJECT RULES: Read CLAUDE.md and .claude/rules/frontend.md.
-
-  DIFF / FILES: [paste full diff]
-
-  SCAN FOR: WCAG AA contrast violations, missing ARIA labels, keyboard
-  navigation gaps, responsive layout issues, SSR hydration mismatches,
-  design system violations (hardcoded colors, wrong component patterns),
-  missing loading/error states, animation pitfalls, fixed overlay
-  stacking context issues (backdrop-filter parents), raw img tags
-  instead of framework image components.
-
-  OUTPUT: same strict JSON format as Security Reviewer.
-```
+### Domain Expert (agent: code-reviewer)
+- Business logic correctness per CLAUDE.md rules
+- Edge cases in data flow, off-by-one errors, null handling
+- Missing error handling or incomplete implementations
+- Missing audit logging for mutations
+- Regression risk
 
 ---
 
-## PHASE 3: SYNTHESIS & REPORT
+## Phase 3 — Synthesize
 
-1. Parse each agent's JSON. Extract findings manually if prose was returned.
-2. Deduplicate — same file + line + issue = merge, keep highest severity.
-3. Filter false positives that contradict explicit project rules.
-4. Sort: CRITICAL → HIGH → MEDIUM → LOW. Within tier, sort by effort (LOW first).
-5. Verdict: **PASS** (0 CRITICAL, 0 HIGH) | **NEEDS ATTENTION** (0 CRITICAL, 1+ HIGH) | **NEEDS WORK** (1+ CRITICAL)
+Merge all findings. Deduplicate. Prioritize:
+
+| Severity | Meaning | Action |
+|----------|---------|--------|
+| **CRITICAL** | Security hole, data loss, crash | Must fix before merge |
+| **HIGH** | Significant bug, broken flow, a11y violation | Should fix soon |
+| **MEDIUM** | Performance issue, pattern violation, missing state | Fix in follow-up |
+| **LOW** | Style, naming, minor improvement | Nice to fix |
+
+Verdict: **PASS** (0 CRITICAL, 0 HIGH) | **NEEDS ATTENTION** (0 CRITICAL, 1+ HIGH) | **NEEDS WORK** (1+ CRITICAL)
+
+---
+
+## Phase 4 — Report
 
 ```
-================================================================
-  CODE REVIEW — [N] files | [M] findings
-  Verdict: [PASS | NEEDS ATTENTION | NEEDS WORK]
-================================================================
+═══════════════════════════════════════════════
+  Code Review — [scope] | Verdict: [PASS / NEEDS ATTENTION / NEEDS WORK]
+═══════════════════════════════════════════════
 
 WHAT'S GOOD
-  [merged positives, deduplicated]
+  [notable positives]
 
-CRITICAL (resolve before merging)
-  [file:line] Title
-  Impact: [why]
-  Fix: [code]
-  Effort: LOW|MED|HIGH  Pre-existing: yes|no
+CRITICAL (X) — resolve before merging
+  1. [file:line] — description
+     Impact: why this matters
+     Fix: concrete code or approach
 
-HIGH (resolve soon)
-  [same format]
+HIGH (X) — resolve soon
+  1. [file:line] — description
+     Impact: ...  Fix: ...
 
-MEDIUM (address in follow-up)
-  [same format]
+MEDIUM (X) — address in follow-up
+  ...
 
-LOW (informational / style)
-  [same format]
+LOW (X) — informational
+  ...
 
-PRE-EXISTING ([count])
-  [preExisting: true items, listed separately]
+PRE-EXISTING (X) — not introduced by this change
+  ...
 
-Approved by: Security, Logic, Architecture, UX
-Issues requiring attention: [CRITICAL + HIGH count]
+Approved by: Security, Architecture, UX, Domain
+═══════════════════════════════════════════════
 ```
 
 ---
 
-## PHASE 4: AUTO-FIX
+## Phase 5 — Auto-Fix (if `--fix` in $ARGUMENTS)
 
-**Only runs if `$ARGUMENTS` contains `--fix`.**
+**HUMAN GATE:** Present all CRITICAL and HIGH findings. Ask: "Fix these automatically?"
 
-Fix order: CRITICAL → HIGH. Skip MEDIUM, LOW, and PRE-EXISTING.
+If approved:
+1. Fix CRITICAL issues first, then HIGH
+2. Skip MEDIUM, LOW, and PRE-EXISTING
+3. Run type checker after fixes
+4. Show diff of changes made
 
-For each fix: read file → Edit tool → verify no downstream breakage.
-No `// TODO` or placeholder comments — write the actual implementation.
-
-`--fix` does NOT apply security fixes, public API changes, or architecture refactors without explicit confirmation.
-
-If `--fix` is absent:
-```
-Tip: Run /code-review --fix to auto-remediate CRITICAL and HIGH issues.
-```
+`--fix` does NOT apply to security architecture changes or public API changes without explicit confirmation.
 
 ---
 
-## PHASE 5: QUALITY GATE
+## Phase 6 — Quality Gate
 
-Run the project's type checker:
 ```bash
-npx tsc --noEmit   # TypeScript projects
-# or: mypy .       # Python
-# or: cargo check  # Rust
-# or: go vet ./... # Go
+npx tsc --noEmit   # TypeScript
+# mypy .           # Python
+# cargo check      # Rust
+# go vet ./...     # Go
 ```
 
-If `--fix` was applied and errors appear, fix your own mistakes (up to 3 cycles).
-
 ```
-================================================================
-  QUALITY GATE: [PASS | FAIL]
-  Type check: [0 errors | N errors]
-================================================================
+═══════════════════════════════════════════════
+  Quality Gate: [PASS | FAIL — N errors]
+═══════════════════════════════════════════════
 ```
-
----
 
 ## Rules
-
-- Do NOT sugarcoat bad code. Be direct and specific.
-- Every finding MUST include a concrete fix (code, not advice).
-- Every finding MUST explain WHY it matters (impact, not just "bad practice").
-- CLAUDE.md rules are LAW — violations are always CRITICAL.
-- Pre-existing issues are flagged but kept separate from new issues.
-- Review is read-only by default. Only `--fix` enables writes.
-- If nothing changed and no files specified: "Nothing to review." and stop.
+- Read CLAUDE.md before reviewing — project rules are non-negotiable, violations = CRITICAL
+- Cite specific file:line for every finding
+- Every finding needs a concrete fix — not just "this is bad"
+- Don't flag style preferences — only real issues
+- Mark pre-existing issues separately — don't penalize new changes for old debt
+- If nothing changed and no files specified: "Nothing to review." and stop

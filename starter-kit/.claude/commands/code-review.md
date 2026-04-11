@@ -4,16 +4,15 @@ description: Multi-agent parallel code review. Four specialist subagents examine
 
 # /code-review
 
-Runs a 4-agent parallel code review. Specialists examine code simultaneously.
+Run a multi-agent code review on the current changes.
 
 ---
 
 ## Phase 1 — Context Gathering
 
 1. Read CLAUDE.md for project rules and non-negotiables
-2. Run `git diff` (or `git diff HEAD~N` for multiple commits) to identify changed files
+2. Run `git diff` to identify changed files
 3. Read each changed file in full to understand context
-4. Identify the scope: new feature, bug fix, refactor, etc.
 
 ---
 
@@ -24,77 +23,65 @@ Launch 4 agents in parallel using the Agent tool:
 ### Security Reviewer (agent: security-reviewer)
 - Auth bypasses, injection vulnerabilities, exposed secrets
 - API routes missing authentication checks
-- OWASP top 10 issues, hardcoded credentials
-- Project-specific security rules from CLAUDE.md
+- OWASP top 10 issues, hardcoded credentials or tokens
+- Violations of CLAUDE.md security rules → always CRITICAL
 
 ### Architecture Reviewer (agent: code-reviewer)
 - N+1 queries, memory leaks, missing indexes
 - DRY violations, unused imports, dead code
 - Pattern consistency with existing codebase
-- Type safety and naming conventions
+- Type safety per CLAUDE.md
 
 ### Frontend/UX Reviewer (agent: frontend-engineer)
-- Accessibility: ARIA labels, keyboard navigation, color contrast (WCAG AA)
-- Responsive: mobile/tablet/desktop breakpoints
-- Component patterns, missing loading/error states
+- Accessibility: ARIA labels, keyboard navigation, WCAG AA contrast
+- Responsive breakpoints, missing loading/error states
 - Design system compliance per CLAUDE.md
+- Skip if no frontend files changed
 
 ### Domain Expert (agent: code-reviewer)
 - Business logic correctness per CLAUDE.md rules
-- Edge cases in data flow
-- Error handling completeness
+- Edge cases, null handling, missing error handling
 - Regression risk
 
 ---
 
-## Phase 3 — Synthesize
-
-Merge all findings. Deduplicate. Prioritize:
+## Phase 3 — Synthesize + Report
 
 | Severity | Meaning | Action |
 |----------|---------|--------|
 | **CRITICAL** | Security hole, data loss, crash | Must fix before merge |
-| **HIGH** | Significant bug or accessibility gap | Should fix soon |
-| **MEDIUM** | Performance issue, pattern violation | Fix in follow-up |
+| **HIGH** | Significant bug, broken flow | Fix soon |
+| **MEDIUM** | Performance issue, pattern violation | Follow-up |
 | **LOW** | Style, naming, minor improvement | Nice to fix |
 
 Verdict: **PASS** (0 CRITICAL, 0 HIGH) | **NEEDS ATTENTION** (1+ HIGH) | **NEEDS WORK** (1+ CRITICAL)
 
----
-
-## Phase 4 — Auto-Fix (if `--fix` in $ARGUMENTS)
-
-**HUMAN GATE:** Present all CRITICAL and HIGH findings. Ask: "Fix these automatically?"
-
-If approved:
-1. Fix CRITICAL issues first, then HIGH
-2. Run type checker after fixes
-3. Show diff of changes made
-
----
-
-## Phase 5 — Report
-
 ```
 ═══════════════════════════════════════════════
-  Code Review — [scope] | Verdict: [PASS/NEEDS ATTENTION/NEEDS WORK]
+  Code Review — [scope] | Verdict: [PASS/...]
 ═══════════════════════════════════════════════
-
-CRITICAL (X)
-  1. [file:line] — description — impact — fix
-
-HIGH (X)
-  1. [file:line] — description
-
-MEDIUM (X) / LOW (X)
-  ...
-
-Score: X/10
+CRITICAL (X)  1. [file:line] — description — fix
+HIGH (X)      1. [file:line] — description — fix
+MEDIUM / LOW  ...
+PRE-EXISTING  [issues not introduced by this change]
 ═══════════════════════════════════════════════
+```
+
+---
+
+## Phase 4 — Auto-Fix (if `--fix`)
+
+HUMAN GATE → fix CRITICAL + HIGH only → run type checker → show diff.
+
+---
+
+## Phase 5 — Quality Gate
+
+```bash
+npx tsc --noEmit  # or your stack's type checker
 ```
 
 ## Rules
-- Read CLAUDE.md before reviewing — project rules are LAW, violations = CRITICAL
-- Cite specific file:line for every finding
-- Every finding needs a concrete fix — not just "this is bad"
-- Don't flag style preferences — only real issues
+- CLAUDE.md rules are non-negotiable — violations = CRITICAL
+- Every finding needs a concrete fix, not just a description
+- Mark pre-existing issues separately
