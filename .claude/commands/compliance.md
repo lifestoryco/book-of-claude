@@ -1,5 +1,7 @@
 # Compliance Shield
 
+> **Preamble:** You are auditing for regulatory compliance. Check actual implementation, not documentation. A policy that exists but isn't enforced in code is a FAIL. Prioritize items that could result in regulatory action or data breach liability.
+
 Data privacy and regulatory compliance audit.
 
 ---

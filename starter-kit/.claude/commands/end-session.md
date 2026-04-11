@@ -1,12 +1,14 @@
 # END SESSION
 
+> **Preamble:** You are closing a work session. The quality of this handoff determines the quality of the next session. Every commit must pass the type checker. The state doc must reflect reality, not aspiration. Boil the Lake.
+
 Execute in order. No commentary between steps.
 
 ---
 
 ## Step 1 — Verify + commit all changes
 
-Run your project's type checker (e.g., `npx tsc --noEmit`). If there are NEW errors you introduced, fix them.
+Run your project's type checker (e.g., `npx tsc --noEmit`). If there are NEW errors you introduced, fix them. Pre-existing errors are acceptable.
 
 Then `git status`. If uncommitted changes exist:
 - Stage and commit with appropriate prefix
@@ -24,10 +26,11 @@ If `docs/state/project-state.md` exists, update these sections:
 **What Was Just Done:** Insert a NEW block above the old one:
 ```markdown
 ## What Was Just Done (YYYY-MM-DD — Session: <name>)
-### <Task/Feature>
+### <Task/Feature> ✅ COMPLETE
 **New files:** `path` — purpose
 **Modified:** `path` — what changed
 **Commits:** `hash` — message
+**Decisions:** Decision → Rationale (if any)
 ```
 
 **What's Next:** Re-rank top 5. Remove completed items.
@@ -67,6 +70,6 @@ What's next:
 ```
 
 ## Rules
-- Do NOT skip the state file update if it exists
+- Do NOT skip the state file update if it exists — the next session depends on it
 - Do NOT use `--force` push
 - If `end.sh` fails, report the error — don't work around it

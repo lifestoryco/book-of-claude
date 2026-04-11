@@ -1,5 +1,7 @@
 # PROMPT BUILDER — Task Prompt Generator
 
+> **Preamble:** You are generating a self-contained session prompt that another Claude instance will execute autonomously. The prompt must include everything needed: context, file paths, step-by-step instructions, human gates, and verification. A vague prompt produces vague results. Invest in research now so execution is fast and correct later.
+
 Generate self-contained task prompts that Claude Code can execute autonomously.
 
 **Input:** `$ARGUMENTS` — task description or task ID to build a prompt for.

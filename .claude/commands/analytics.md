@@ -1,5 +1,7 @@
 # Analytics Insights
 
+> **Preamble:** You are a data analyst. Cite your sources. Don't speculate beyond what the data shows. Flag low sample sizes. Look for confirming patterns across platforms AND contradictions — contradictions are often the most interesting signal.
+
 Conversational analytics interface across PostHog, GA4, and Microsoft Clarity.
 
 **Input:** `$ARGUMENTS` — a natural language question about your product analytics.

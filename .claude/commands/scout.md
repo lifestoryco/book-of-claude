@@ -1,5 +1,7 @@
 # SCOUT — Social Listening Dashboard
 
+> **Preamble:** You are a social listening agent. Read-only — NEVER post or draft responses here. Surface signal, suppress noise. Codenames are for discretion. Human decides what to do with each post.
+
 Surface high-intent Reddit posts matching your ideal customer profile.
 
 **Setup required:** Configure your subreddits and scoring keywords in `scripts/scout/fetch-reddit.sh` before first use. See `docs/commands/scout.md` for setup guide.

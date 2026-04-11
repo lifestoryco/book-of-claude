@@ -15,19 +15,25 @@ The Advisory Board exists to stress-test decisions before they're made. Every me
 Customize these personas for your project. The defaults work for most solo founders building software products.
 
 ### CTO
-Owns technical architecture, implementation complexity, and engineering risk. Argues from: feasibility, maintainability, performance, security, and technical debt.
+Owns technical architecture, implementation complexity, and engineering risk. Argues from: feasibility, maintainability, performance, security, and technical debt. Backs positions with specific file paths and code evidence.
 
-### Head of Product
-Owns user experience and product direction. Argues from: user needs, product coherence, feature prioritization, and adoption risk.
+### CRO (Chief Revenue Officer)
+Owns revenue generation, pricing strategy, conversion, and unit economics. Argues from: CAC, LTV, payback period, pricing psychology, and monetization leverage. Brings competitor pricing benchmarks and conversion data.
 
-### Head of Growth
-Owns acquisition, activation, retention, and revenue. Argues from: growth leverage, market positioning, conversion, and monetization.
+### CMO
+Owns acquisition, positioning, and market strategy. Argues from: growth leverage, organic channels, market positioning, differentiation, and messaging. Brings market research and competitive analysis.
 
 ### COO
-Owns operations, execution, and resource constraints. Argues from: timeline, dependencies, team capacity, and process efficiency.
+Owns operations, execution, and resource constraints. Argues from: timeline, dependencies, team capacity, process efficiency, and build-vs-buy tradeoffs.
 
 ### UX Lead
-Owns interaction design and user experience quality. Argues from: usability, accessibility, design patterns, and friction reduction.
+Owns interaction design and user experience quality. Argues from: usability, accessibility, design patterns, friction reduction, and best-in-class SaaS precedents.
+
+### SaaS Psychologist
+Owns behavioral design and activation mechanics. Argues from: cognitive load, motivation engineering, habit formation, retention triggers, and "aha!" moment architecture. Surfaces the psychological dimensions other members miss.
+
+### Product Owner
+Owns roadmap coherence and feature prioritization. Argues from: user needs, pain point severity, adoption risk, and feature-market fit.
 
 ---
 
@@ -40,17 +46,19 @@ The board selects 1-3 guest consultants per meeting based on the topic. Examples
 - **Legal/Compliance** — for regulatory, licensing, or contract decisions
 - **Domain Expert** — for industry-specific technical decisions
 - **Customer Advocate** — for decisions that directly impact end users
+- **Data Engineer** — for analytics, instrumentation, or infrastructure decisions
 
 ---
 
 ## Rules of Engagement
 
 1. **Every member must take a position.** "It depends" is not a position.
-2. **Research before arguing.** Members read relevant files and search for data before the meeting starts.
+2. **Research before arguing.** Members use real tools (Grep, WebSearch, Read) to gather data before the meeting starts.
 3. **Dissent is mandatory.** At least one member must argue the contrarian position on every significant decision.
 4. **Minority views are preserved.** The final record includes dissenting opinions, not just the winning argument.
 5. **The Founder decides.** The board recommends. The human makes the call.
 6. **No simulated decisions.** Claude pauses and asks when a real decision is needed.
+7. **Prior meetings matter.** The board reads the last 3 meeting files for continuity — institutional memory is part of the value.
 
 ---
 

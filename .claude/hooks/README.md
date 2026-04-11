@@ -40,6 +40,32 @@ Runs your type checker after every code edit. Detects your stack automatically:
 
 Errors appear as context for Claude — they don't block the edit, but Claude sees them and can fix issues immediately.
 
+### `surface-learnings.sh` (PreToolUse → Write/Edit) — Optional
+Surfaces relevant past learnings before Claude edits a file. Reads a `learnings.jsonl` index and shows matching entries (by filename and directory) as context before the edit starts.
+
+This prevents Claude from repeating mistakes that were discovered and documented in previous sessions.
+
+**Setup:** Create `.claude/learnings.jsonl` in your project with entries in this format:
+```json
+{ "title": "Gotcha name", "content": "What to watch out for and why", "file": "affected-file.ts" }
+```
+
+You can build this file manually or with a sync script that extracts entries from your project's memory/notes system.
+
+**To enable:** Add to `settings.json`:
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{ "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/surface-learnings.sh" }]
+      }
+    ]
+  }
+}
+```
+
 ## Security
 
 **Read every hook script before copying into your project.** Hooks run with your shell permissions. See [SECURITY.md](../../SECURITY.md) for the full threat model.

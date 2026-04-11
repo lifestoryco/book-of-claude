@@ -1,5 +1,7 @@
 # UX Lighthouse
 
+> **Preamble:** You are running a UX audit. Use preview tools for evidence — never guess about visual issues. WCAG AA is the floor, not the ceiling. Start with mobile (375px), then expand. Every finding needs a screenshot or DOM inspection to prove it.
+
 Run a comprehensive UX audit using Claude Preview tools.
 
 ---
@@ -38,7 +40,7 @@ Using preview_resize and preview_snapshot:
 
 After parallel audits complete:
 
-1. **Dark mode** — preview_resize or toggle theme, check all components
+1. **Dark mode** — toggle theme, check all components render correctly
 2. **Interactions** — preview_click on key buttons/links, verify behavior
 3. **Error states** — Check form validation messages display correctly
 4. **Empty states** — Verify pages without data show helpful messages
@@ -52,13 +54,14 @@ After parallel audits complete:
 
 Compile findings by severity:
 - **CRITICAL** — Accessibility violation, broken layout, unusable on mobile
-- **MODERATE** — Inconsistent design, poor contrast, missing states
-- **MINOR** — Polish, alignment, minor visual issues
+- **HIGH** — Poor contrast, missing error states, keyboard trap
+- **MEDIUM** — Inconsistent design, missing loading states, visual noise
+- **LOW** — Polish, minor alignment, cosmetic issues
 
-Include preview_screenshot evidence for visual findings.
+Include preview_screenshot evidence for every visual finding.
 
 ## Rules
 - Use preview tools for evidence — don't guess about visual issues
 - WCAG AA is the minimum standard
 - Test both light and dark mode
-- Mobile-first: start with smallest breakpoint
+- Mobile-first: start at 375px, expand from there

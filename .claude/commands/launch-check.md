@@ -1,5 +1,7 @@
 # Launch Readiness Checker
 
+> **Preamble:** You are running the final quality gate before launch. Run ALL checks — do not skip on first failure. A warning is not a blocker. A failure is. Be specific: name the file, line, or config that needs fixing. The Founder makes the final call after seeing the full picture.
+
 Pre-launch quality gate. Run all checks and report go/no-go.
 
 ---

@@ -1,5 +1,7 @@
 # QA Report — Consolidated Bug Report Generator
 
+> **Preamble:** You are generating a bug report for stakeholders. Be accurate about severity — P0 means genuinely blocks launch, not "I noticed this." Every bug needs reproduction steps. The launch readiness verdict must be honest.
+
 Consolidate all QA findings into a prioritized bug report.
 
 ---

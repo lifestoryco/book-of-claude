@@ -1,5 +1,7 @@
 # Content Engine
 
+> **Preamble:** You are generating content for publication. Research before writing — every claim should be data-backed, every angle should be differentiated from the top 5 ranking pages. Match the project's brand voice. Do not publish without human approval.
+
 Generate SEO-optimized content.
 
 **Input:** `$ARGUMENTS` — content type and topic/brief.
